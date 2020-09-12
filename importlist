@@ -1,0 +1,41 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Sep 12 14:44:53 2020
+
+@author: Leopoldo
+"""
+
+
+
+import pandas as pd
+import numpy as np
+import datetime
+
+import sys
+if not sys.warnoptions:
+    import warnings
+    warnings.simplefilter("ignore")
+
+# para instalar a biblioteca - pip install MetaTrader5
+import MetaTrader5 as mt5
+if not mt5.initialize():
+    print("initialize() failed, error code =",mt5.last_error())
+    quit()
+    
+#Lista de ativos que serão importados
+ativos = ['PETR4','VALE3','BOVA11']
+
+resultado = pd.DataFrame(columns = ativos)
+for i in ativos:
+    df = mt5.copy_rates_from_pos(i, mt5.TIMEFRAME_D1, 1, 50)
+    df = pd.DataFrame(df)
+    df.columns=['time', 'open', 'high', 'low', 'close', 'volume', 'spread' ,'real_volume']
+    df['time']=pd.to_datetime(df['time'], unit='s')
+    df.set_index('time', inplace=True)
+    resultado[i] =df['close']
+
+mt5.shutdown()
+#----------------------------------------------------------------
+
+
+resultado.to_csv('resultado.csv')
